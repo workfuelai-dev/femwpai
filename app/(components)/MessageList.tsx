@@ -55,7 +55,7 @@ export default function MessageList({ conversationId }: { conversationId?: strin
   useEffect(() => { scrollToBottom('smooth') }, [data?.length])
 
   return (
-    <div ref={containerRef} className="h-full w-full overflow-auto">
+    <div ref={containerRef} className="h-full overflow-auto">
       <div className="p-4 space-y-2">
         {data?.map(m => {
           const isOut = m.direction==='out'
