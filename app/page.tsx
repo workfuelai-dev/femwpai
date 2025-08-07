@@ -12,9 +12,9 @@ export default function Page() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-h-0">
         <ChatSidebar onSelect={setConversationId} selectedId={conversationId} />
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 min-w-0 flex flex-col">
           <ConversationHeader conversationId={conversationId} />
           <MessageList conversationId={conversationId} />
           <Composer conversationId={conversationId} />

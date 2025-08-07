@@ -15,7 +15,6 @@ export type Message = {
 
 export default function MessageList({ conversationId }: { conversationId?: string }) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
 
   const fetcher = async () => {
     if (!conversationId) return [] as Message[]
@@ -46,21 +45,23 @@ export default function MessageList({ conversationId }: { conversationId?: strin
     return () => window.removeEventListener('message:sent', handler)
   }, [conversationId])
 
-  // Forzar scroll al fondo cuando cambie la conversación o cambie la longitud de mensajes
+  // Forzar scroll al fondo del contenedor (no de la página)
+  const scrollToBottom = (behavior: ScrollBehavior) => {
+    const el = containerRef.current
+    if (!el) return
+    el.scrollTo({ top: el.scrollHeight, behavior })
+  }
+
   useEffect(() => {
-    // En cambio de conversación, scroll inmediato (sin animación)
-    if (conversationId) {
-      requestAnimationFrame(() => bottomRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' }))
-    }
+    if (conversationId) scrollToBottom('auto')
   }, [conversationId])
 
   useEffect(() => {
-    // En nuevos mensajes, scroll suave al fondo
-    requestAnimationFrame(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }))
+    scrollToBottom('smooth')
   }, [data?.length])
 
   return (
-    <div ref={containerRef} className="flex-1 h-[calc(100vh-57px-64px)] overflow-y-auto p-4 space-y-2">
+    <div ref={containerRef} className="flex-1 overflow-y-auto p-4 space-y-2">
       {data?.map(m => {
         const isOut = m.direction==='out'
         const isPending = m.pending || m.id.startsWith('temp-')
@@ -76,7 +77,6 @@ export default function MessageList({ conversationId }: { conversationId?: strin
           </div>
         )
       })}
-      <div ref={bottomRef} />
     </div>
   )
 } 

@@ -35,7 +35,7 @@ export default function ChatSidebar({ onSelect, selectedId }: { onSelect: (id: s
   const { data } = useSWR('conversations', fetcher, { refreshInterval: 5000 })
 
   return (
-    <aside className="w-72 shrink-0 border-r border-gray-200 dark:border-gray-800 h-[calc(100vh-57px)] overflow-y-auto">
+    <aside className="w-72 shrink-0 border-r border-gray-200 dark:border-gray-800 h-full max-h-[calc(100vh-57px)] overflow-y-auto">
       <div className="p-2">
         {data?.map(c => (
           <button key={c.id}
