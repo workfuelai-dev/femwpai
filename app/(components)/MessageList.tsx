@@ -45,23 +45,17 @@ export default function MessageList({ conversationId }: { conversationId?: strin
     return () => window.removeEventListener('message:sent', handler)
   }, [conversationId])
 
-  // Forzar scroll al fondo del contenedor (no de la página)
   const scrollToBottom = (behavior: ScrollBehavior) => {
     const el = containerRef.current
     if (!el) return
-    el.scrollTo({ top: el.scrollHeight, behavior })
+    requestAnimationFrame(() => el.scrollTo({ top: el.scrollHeight, behavior }))
   }
 
-  useEffect(() => {
-    if (conversationId) scrollToBottom('auto')
-  }, [conversationId])
-
-  useEffect(() => {
-    scrollToBottom('smooth')
-  }, [data?.length])
+  useEffect(() => { if (conversationId) scrollToBottom('auto') }, [conversationId])
+  useEffect(() => { scrollToBottom('smooth') }, [data?.length])
 
   return (
-    <div ref={containerRef} className="flex-1 overflow-y-auto p-4 space-y-2">
+    <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2">
       {data?.map(m => {
         const isOut = m.direction==='out'
         const isPending = m.pending || m.id.startsWith('temp-')
