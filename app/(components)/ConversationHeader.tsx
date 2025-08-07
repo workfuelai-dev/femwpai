@@ -1,5 +1,6 @@
 "use client"
 import { useEffect, useState } from 'react'
+import { supabaseBrowser } from '@/lib/supabaseClient'
 
 export default function ConversationHeader({ conversationId }: { conversationId?: string }) {
   const [enabled, setEnabled] = useState<boolean | null>(null)
@@ -7,21 +8,27 @@ export default function ConversationHeader({ conversationId }: { conversationId?
   useEffect(() => {
     const load = async () => {
       if (!conversationId) { setEnabled(null); return }
-      const res = await fetch(`/api/conversation/${conversationId}`)
-      const json = await res.json()
-      setEnabled(json?.auto_reply_enabled ?? false)
+      const sb = supabaseBrowser()
+      const { data } = await sb
+        .from('conversations')
+        .select('auto_reply_enabled')
+        .eq('id', conversationId)
+        .single()
+      setEnabled(data?.auto_reply_enabled ?? false)
     }
     load()
   }, [conversationId])
 
   const toggle = async () => {
     if (!conversationId || enabled===null) return
-    const res = await fetch(`/api/conversation/${conversationId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ auto_reply_enabled: !enabled })
-    })
-    if (res.ok) setEnabled(!enabled)
+    const sb = supabaseBrowser()
+    const { data, error } = await sb
+      .from('conversations')
+      .update({ auto_reply_enabled: !enabled })
+      .eq('id', conversationId)
+      .select('auto_reply_enabled')
+      .single()
+    if (!error) setEnabled(data?.auto_reply_enabled ?? !enabled)
   }
 
   if (!conversationId) return (
