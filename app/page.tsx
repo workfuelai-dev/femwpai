@@ -15,9 +15,9 @@ export default function Page() {
       <div className="h-[calc(100vh-57px)] overflow-hidden">
         <div className="grid grid-cols-[18rem_1fr] h-full">
           <ChatSidebar onSelect={setConversationId} selectedId={conversationId} />
-          <div className="h-full flex flex-col">
+          <div className="h-full grid grid-rows-[auto_1fr_auto]">
             <ConversationHeader conversationId={conversationId} />
-            <div className="flex-1 overflow-hidden">
+            <div className="min-h-0 overflow-hidden">
               <MessageList conversationId={conversationId} />
             </div>
             <Composer conversationId={conversationId} />
