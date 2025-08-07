@@ -55,22 +55,24 @@ export default function MessageList({ conversationId }: { conversationId?: strin
   useEffect(() => { scrollToBottom('smooth') }, [data?.length])
 
   return (
-    <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2">
-      {data?.map(m => {
-        const isOut = m.direction==='out'
-        const isPending = m.pending || m.id.startsWith('temp-')
-        return (
-          <div key={m.id} className={`max-w-[75%] rounded-lg px-3 py-2 ${isOut? 'bg-brand text-white ml-auto':'bg-gray-100 dark:bg-gray-800'} ${isPending? 'opacity-70':''}`}>
-            <div className="text-sm whitespace-pre-wrap break-words">
-              {m.type === 'text' ? (m.content_text ?? '') : `[${m.type}]`}
+    <div ref={containerRef} className="flex-1 min-h-0 overflow-auto">
+      <div className="p-4 space-y-2">
+        {data?.map(m => {
+          const isOut = m.direction==='out'
+          const isPending = m.pending || m.id.startsWith('temp-')
+          return (
+            <div key={m.id} className={`max-w-[75%] rounded-lg px-3 py-2 ${isOut? 'bg-brand text-white ml-auto':'bg-gray-100 dark:bg-gray-800'} ${isPending? 'opacity-70':''}`}>
+              <div className="text-sm whitespace-pre-wrap break-words">
+                {m.type === 'text' ? (m.content_text ?? '') : `[${m.type}]`}
+              </div>
+              <div className="text-[10px] opacity-70 mt-1 flex items-center gap-2">
+                <span>{new Date(m.created_at).toLocaleString()}</span>
+                {isPending && <span>Enviando…</span>}
+              </div>
             </div>
-            <div className="text-[10px] opacity-70 mt-1 flex items-center gap-2">
-              <span>{new Date(m.created_at).toLocaleString()}</span>
-              {isPending && <span>Enviando…</span>}
-            </div>
-          </div>
-        )
-      })}
+          )
+        })}
+      </div>
     </div>
   )
 } 
