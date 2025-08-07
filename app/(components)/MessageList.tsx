@@ -25,7 +25,7 @@ export default function MessageList({ conversationId }: { conversationId?: strin
     return data as Message[]
   }
 
-  const { data, mutate } = useSWR(conversationId ? `messages:${conversationId}` : null, fetcher)
+  const { data, mutate } = useSWR(conversationId ? `messages:${conversationId}` : null, fetcher, { refreshInterval: 2000 })
 
   useEffect(() => {
     if (!conversationId) return
@@ -34,6 +34,12 @@ export default function MessageList({ conversationId }: { conversationId?: strin
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` }, () => mutate())
       .subscribe()
     return () => { sb.removeChannel(channel) }
+  }, [conversationId])
+
+  useEffect(() => {
+    const handler = (e: any) => { if (e?.detail?.conversationId === conversationId) mutate() }
+    window.addEventListener('message:sent', handler)
+    return () => window.removeEventListener('message:sent', handler)
   }, [conversationId])
 
   return (
