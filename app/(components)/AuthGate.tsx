@@ -6,6 +6,9 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState('')
   const [pass, setPass] = useState('')
 
+  const defaultUser = (process.env.NEXT_PUBLIC_BASIC_USER ?? 'FEM2025')
+  const defaultPass = (process.env.NEXT_PUBLIC_BASIC_PASS ?? 'FEM8infinito')
+
   useEffect(() => {
     const t = localStorage.getItem('auth-ok')
     if (t === '1') setOk(true)
@@ -32,9 +35,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           <button
             className="w-full bg-brand text-white rounded px-3 py-2"
             onClick={() => {
-              const u = process.env.NEXT_PUBLIC_BASIC_USER
-              const p = process.env.NEXT_PUBLIC_BASIC_PASS
-              if (user === u && pass === p) {
+              if (user.trim() === defaultUser && pass.trim() === defaultPass) {
                 localStorage.setItem('auth-ok','1')
                 setOk(true)
               } else {
