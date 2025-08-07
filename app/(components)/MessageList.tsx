@@ -15,6 +15,7 @@ export type Message = {
 
 export default function MessageList({ conversationId }: { conversationId?: string }) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   const fetcher = async () => {
     if (!conversationId) return [] as Message[]
@@ -45,22 +46,18 @@ export default function MessageList({ conversationId }: { conversationId?: strin
     return () => window.removeEventListener('message:sent', handler)
   }, [conversationId])
 
-  // Auto-scroll: si el usuario está cerca del final, hacemos scroll al recibir datos
+  // Forzar scroll al fondo cuando cambie la conversación o cambie la longitud de mensajes
   useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    const threshold = 200
-    const isNearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - threshold
-    if (isNearBottom) {
-      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
+    // En cambio de conversación, scroll inmediato (sin animación)
+    if (conversationId) {
+      requestAnimationFrame(() => bottomRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' }))
     }
-  }, [data?.length, conversationId])
-
-  // Al cambiar de conversación, baja al final
-  useEffect(() => {
-    const el = containerRef.current
-    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'auto' })
   }, [conversationId])
+
+  useEffect(() => {
+    // En nuevos mensajes, scroll suave al fondo
+    requestAnimationFrame(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }))
+  }, [data?.length])
 
   return (
     <div ref={containerRef} className="flex-1 h-[calc(100vh-57px-64px)] overflow-y-auto p-4 space-y-2">
@@ -79,6 +76,7 @@ export default function MessageList({ conversationId }: { conversationId?: strin
           </div>
         )
       })}
+      <div ref={bottomRef} />
     </div>
   )
 } 
