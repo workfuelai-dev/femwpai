@@ -1,0 +1,23 @@
+# Node
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Next.js
+.next
+out
+.next.cache
+
+# Mac
+.DS_Store
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Supabase local artifacts
+supabase/.branches
+supabase/.temp 
