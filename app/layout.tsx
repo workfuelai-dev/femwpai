@@ -1,5 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import AuthGate from './(components)/AuthGate'
 
 export const metadata: Metadata = {
   title: 'femwpai - Chat AI + WhatsApp',
@@ -10,9 +11,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className="h-full">
       <body className="h-full antialiased">
-        <div className="min-h-screen flex flex-col">
-          {children}
-        </div>
+        <AuthGate>
+          <div className="min-h-screen flex flex-col">
+            {children}
+          </div>
+        </AuthGate>
       </body>
     </html>
   )

@@ -7,7 +7,9 @@ export default function Composer({ conversationId }: { conversationId?: string }
 
   const send = async () => {
     if (!text.trim() || !conversationId) return
-    await fetch('/api/send', {
+    // Llamada directa a Supabase Edge Function (CORS abierto)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    await fetch(`${supabaseUrl}/functions/v1/send-message`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ conversationId, type: 'text', text })

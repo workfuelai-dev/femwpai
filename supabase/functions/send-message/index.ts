@@ -1,11 +1,19 @@
 // deno-lint-ignore-file no-explicit-any
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
-serve(async (req: Request) => {
-  if (req.method !== 'POST') return new Response('method not allowed', { status: 405 })
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+  "Access-Control-Allow-Headers": "*",
+};
 
-  const appKey = req.headers.get('x-api-key')
-  if (!appKey || appKey !== Deno.env.get('APP_API_KEY')) return new Response('unauthorized', { status: 401 })
+serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders })
+  }
+  if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: corsHeaders })
+
+  // Nota: CORS abierto y sin API key por solicitud del despliegue en GitHub Pages
 
   const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2')
 
@@ -25,7 +33,7 @@ serve(async (req: Request) => {
     .eq('id', conversationId)
     .single()
 
-  if (!conv?.contact?.wa_id) return new Response(JSON.stringify({ error: 'conversation not found' }), { status: 400 })
+  if (!conv?.contact?.wa_id) return new Response(JSON.stringify({ error: 'conversation not found' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
   const to = conv.contact.wa_id as string
 
@@ -47,7 +55,7 @@ serve(async (req: Request) => {
     body: JSON.stringify(payload)
   })
   const json = await res.json().catch(()=>({}))
-  if (!res.ok) return new Response(JSON.stringify(json), { status: res.status })
+  if (!res.ok) return new Response(JSON.stringify(json), { status: res.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
   const waMessageId = json.messages?.[0]?.id ?? null
 
@@ -60,5 +68,5 @@ serve(async (req: Request) => {
     status: 'sent'
   })
 
-  return new Response(JSON.stringify({ ok: true, id: waMessageId }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  return new Response(JSON.stringify({ ok: true, id: waMessageId }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 }) 
