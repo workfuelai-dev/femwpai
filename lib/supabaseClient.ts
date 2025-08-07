@@ -1,13 +1,26 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-export const supabaseBrowser = () => {
+let browserClient: SupabaseClient | undefined
+
+export const supabaseBrowser = (): SupabaseClient => {
+  if (browserClient) return browserClient
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  return createClient(url, anon)
+  browserClient = createClient(url, anon, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      storageKey: 'femwpai'
+    }
+  })
+  return browserClient
 }
 
-export const supabaseService = () => {
+let serviceClient: SupabaseClient | undefined
+export const supabaseService = (): SupabaseClient => {
+  if (serviceClient) return serviceClient
   const url = process.env.SUPABASE_URL!
   const service = process.env.SUPABASE_SERVICE_ROLE_KEY!
-  return createClient(url, service)
+  serviceClient = createClient(url, service)
+  return serviceClient
 } 
