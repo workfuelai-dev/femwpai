@@ -3,6 +3,11 @@ import useSWR from 'swr'
 import { supabaseBrowser } from '@/lib/supabaseClient'
 import { useEffect, useRef, useState } from 'react'
 
+function isDebug() {
+  if (typeof window === 'undefined') return false
+  return new URLSearchParams(window.location.search).get('debug') === '1'
+}
+
 export type Message = {
   id: string
   conversation_id: string
@@ -18,6 +23,7 @@ export default function MessageList({ conversationId }: { conversationId?: strin
   const listRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const [stickToBottom, setStickToBottom] = useState(true)
+  const debug = isDebug()
 
   const fetcher = async () => {
     if (!conversationId) return [] as Message[]
@@ -64,6 +70,7 @@ export default function MessageList({ conversationId }: { conversationId?: strin
   const scrollToBottom = (behavior: ScrollBehavior) => {
     const root = listRef.current
     if (!root) return
+    if (debug) console.log('[autoscroll]', behavior, 'h=', root.scrollHeight)
     root.scrollTo({ top: root.scrollHeight, behavior })
   }
 
@@ -71,8 +78,8 @@ export default function MessageList({ conversationId }: { conversationId?: strin
   useEffect(() => { if (stickToBottom) scrollToBottom('smooth') }, [data?.length, stickToBottom])
 
   return (
-    <div ref={outerRef} className="h-full overflow-hidden">
-      <div ref={listRef} className="h-full overflow-auto">
+    <div ref={outerRef} className={`h-full overflow-hidden ${debug? 'ring-2 ring-pink-500':''}`}>
+      <div ref={listRef} className={`h-full overflow-auto ${debug? 'ring-2 ring-yellow-500':''}`}>
         <div className="p-4 space-y-2">
           {data?.map(m => {
             const isOut = m.direction==='out'
