@@ -1,7 +1,7 @@
 "use client"
 import useSWR from 'swr'
 import { supabaseBrowser } from '@/lib/supabaseClient'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export type Message = {
   id: string
@@ -15,6 +15,8 @@ export type Message = {
 
 export default function MessageList({ conversationId }: { conversationId?: string }) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const [stickToBottom, setStickToBottom] = useState(true)
 
   const fetcher = async () => {
     if (!conversationId) return [] as Message[]
@@ -45,14 +47,32 @@ export default function MessageList({ conversationId }: { conversationId?: strin
     return () => window.removeEventListener('message:sent', handler)
   }, [conversationId])
 
+  // Sentinel para saber si estamos al fondo
+  useEffect(() => {
+    const el = containerRef.current
+    const sentinel = bottomRef.current
+    if (!el || !sentinel) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        setStickToBottom(entry.isIntersecting)
+      },
+      { root: el, threshold: 1.0 }
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [conversationId])
+
   const scrollToBottom = (behavior: ScrollBehavior) => {
     const el = containerRef.current
     if (!el) return
-    requestAnimationFrame(() => el.scrollTo({ top: el.scrollHeight, behavior }))
+    el.scrollTo({ top: el.scrollHeight, behavior })
   }
 
+  // Al cambiar de conversación, baja siempre
   useEffect(() => { if (conversationId) scrollToBottom('auto') }, [conversationId])
-  useEffect(() => { scrollToBottom('smooth') }, [data?.length])
+  // En nuevos mensajes, baja solo si el usuario está al fondo
+  useEffect(() => { if (stickToBottom) scrollToBottom('smooth') }, [data?.length, stickToBottom])
 
   return (
     <div ref={containerRef} className="h-full overflow-auto">
@@ -72,6 +92,7 @@ export default function MessageList({ conversationId }: { conversationId?: strin
             </div>
           )
         })}
+        <div ref={bottomRef} />
       </div>
     </div>
   )
